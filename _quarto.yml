@@ -3,7 +3,7 @@ project:
   output-dir: docs
 
 website:
-  title: "diabetes_prediction_website"
+  title: "Diabetes Prediction"
   navbar:
     left:
       - text: Analysis
