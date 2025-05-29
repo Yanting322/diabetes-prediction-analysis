@@ -126,13 +126,6 @@
     "text": "8.2 Scaler\n\n# split the dataset\nx=df.drop(\"diabetes\",axis=1)\ny=df[\"diabetes\"]\nprint(x.shape)\nprint(y.shape)\nx_temp,x_test,y_temp,y_test = train_test_split(x,y,test_size=0.2,random_state=12)\nprint(x_temp.shape,y_temp.shape)\nx_train,x_valid,y_train,y_valid = train_test_split(x_temp,y_temp,test_size=0.2,random_state=12)\nprint(x_train.shape,x_valid.shape,x_test.shape)\nprint(y_train.value_counts())\n\n(95102, 8)\n(95102,)\n(76081, 8) (76081,)\n(60864, 8) (15217, 8) (19021, 8)\ndiabetes\n0    55428\n1     5436\nName: count, dtype: int64\n\n\n\nnum_features = ['age', 'bmi', 'HbA1c_level', 'blood_glucose_level', 'hypertension', 'heart_disease']\ncat_features = ['gender', 'smoking_history']\npreprocessor = ColumnTransformer(transformers=[\n    ('num', StandardScaler(), num_features),\n    ('cat', OneHotEncoder(handle_unknown='ignore'), cat_features)\n])\n\n# pipline\nclf = imbPipeline(steps=[\n    ('preprocessor', preprocessor),\n    ('over', over),\n    ('under', under),\n    ('classifier', RandomForestClassifier(random_state=12))\n])"
   },
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "diabetes_prediction_website",
-    "section": "",
-    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites."
-  },
-  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About",
