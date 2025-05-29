@@ -5,9 +5,9 @@ website:
   title: "diabetes_prediction_website"
   navbar:
     left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
+      - text: Analysis
+        href: analysis.html
+      
 
 format:
   html:
