@@ -1,0 +1,142 @@
+[
+  {
+    "objectID": "analysis.html",
+    "href": "analysis.html",
+    "title": "1. Getting Started",
+    "section": "",
+    "text": "import os\nimport warnings\nos.environ['PYTHONWARNINGS'] = 'ignore'\nwarnings.filterwarnings(\"ignore\")\nDiabetes is a chronic metabolic disorder that affects millions of people worldwide and poses a significant public health challenge. Early detection and effective management of diabetes are crucial for reducing complications and improving patient outcomes.\nIn this project, we analyze a comprehensive dataset containing demographic, clinical, and laboratory features to develop a predictive model for diabetes diagnosis. The dataset includes key risk factors such as age, body mass index (BMI), blood pressure, blood glucose levels, and comorbidities like hypertension and heart disease. By leveraging various data preprocessing techniques—including missing value imputation, feature engineering, and balancing methods such as SMOTE—we aim to build robust machine learning models that can accurately identify individuals at risk of diabetes.\nThe ultimate goal of this project is to provide actionable insights for healthcare practitioners and support early intervention strategies, thereby contributing to more effective diabetes prevention and management."
+  },
+  {
+    "objectID": "analysis.html#preface",
+    "href": "analysis.html#preface",
+    "title": "1. Getting Started",
+    "section": "3.1 Preface",
+    "text": "3.1 Preface\nIn this analysis, we have chosen the RamdomForest Classifier as our model. The RandomForest algorithm is an ensemble learning method that operates by constructing a multitude of decision trees during training and outputting the class that is the mode of the classes for classification or mean prediction of the individual trees for regression. Several reasoms guide our choice of Ramdom Forest for this task: 1. Handling of Large Data\nRandom Forests can efficiently handle large datasets with high dimensionality. They are able to process a large number of features and observations without significant loss in performance.\n\nRobustness to Overfitting\nBy averaging the results of multiple decision trees, Random Forest reduces the risk of overfitting that is common in single decision trees. The ensemble approach ensures that the model generalizes well to unseen data.\nHandling Mixed Data Types\nRandom Forests can naturally work with both numerical and categorical features without the need for extensive preprocessing or encoding. This flexibility makes them suitable for real-world datasets that contain various types of variables.\nFeature Importance\nRandom Forests provide built-in estimates of feature importance, allowing us to identify which variables contribute most to the prediction. This helps with feature selection and enhances the interpretability of the model.\nNon-linearity\nUnlike linear models, Random Forests can capture complex, non-linear relationships in the data. They are capable of modeling interactions between variables that linear models might miss."
+  },
+  {
+    "objectID": "analysis.html#import-libraries",
+    "href": "analysis.html#import-libraries",
+    "title": "1. Getting Started",
+    "section": "3.2 Import libraries",
+    "text": "3.2 Import libraries\n\n\n\n# import neccessary libraries\nimport numpy as np\nimport pandas as pd\n\n# import visualization libraries\nimport matplotlib.pyplot as plt\nimport seaborn as sns\n\n# import model\nfrom sklearn.model_selection import train_test_split, GridSearchCV\nfrom sklearn.preprocessing import StandardScaler, OneHotEncoder\nfrom sklearn.compose import ColumnTransformer\nfrom sklearn.ensemble import RandomForestClassifier\nfrom sklearn.metrics import accuracy_score, classification_report, confusion_matrix\nfrom sklearn.pipeline import Pipeline\n\n#Import Sampler libraries\nfrom imblearn.over_sampling import SMOTE\nfrom imblearn.under_sampling import RandomUnderSampler\nfrom imblearn.pipeline import Pipeline as imbPipeline\nfrom sklearn.model_selection import StratifiedKFold\n\n# Set the decimal format；\npd.options.display.float_format = \"{:.2f}\".format"
+  },
+  {
+    "objectID": "analysis.html#input-the-data",
+    "href": "analysis.html#input-the-data",
+    "title": "1. Getting Started",
+    "section": "3.3 Input the data",
+    "text": "3.3 Input the data\n\ndf = pd.read_csv('diabetes_prediction_dataset.csv')\n\n\ndf.head()\n\n\n\n\n\n\n\n\ngender\nage\nhypertension\nheart_disease\nsmoking_history\nbmi\nHbA1c_level\nblood_glucose_level\ndiabetes\n\n\n\n\n0\nFemale\n80.00\n0\n1\nnever\n25.19\n6.60\n140\n0\n\n\n1\nFemale\n54.00\n0\n0\nNo Info\n27.32\n6.60\n80\n0\n\n\n2\nMale\n28.00\n0\n0\nnever\n27.32\n5.70\n158\n0\n\n\n3\nFemale\n36.00\n0\n0\ncurrent\n23.45\n5.00\n155\n0\n\n\n4\nMale\n76.00\n1\n1\ncurrent\n20.14\n4.80\n155\n0"
+  },
+  {
+    "objectID": "analysis.html#data-quality",
+    "href": "analysis.html#data-quality",
+    "title": "1. Getting Started",
+    "section": "4.1 Data Quality",
+    "text": "4.1 Data Quality\n\n4.1.1 Handling Duplicates\n\ndf.shape\n\n(100000, 9)\n\n\n\nduplicate_rows_data = df[df.duplicated()]\nprint('number of duplicate rows:',duplicate_rows_data.shape)\n\nnumber of duplicate rows: (3854, 9)\n\n\n\ndf = df.drop_duplicates()\n\n\ndf.shape\n\n(96146, 9)\n\n\n\n\n4.1.2 Uniqueness\n\n# loop through each column and count the number of distinct values\nfor column in df.columns:\n    num_distinct_values = len(df[column].unique())\n    print(f\"{column}:{num_distinct_values} distinct values\")\n\ngender:3 distinct values\nage:102 distinct values\nhypertension:2 distinct values\nheart_disease:2 distinct values\nsmoking_history:6 distinct values\nbmi:4247 distinct values\nHbA1c_level:18 distinct values\nblood_glucose_level:18 distinct values\ndiabetes:2 distinct values\n\n\n\n\n4.1.3 Missing values\n\ndf.isnull().sum()\n\ngender                 0\nage                    0\nhypertension           0\nheart_disease          0\nsmoking_history        0\nbmi                    0\nHbA1c_level            0\nblood_glucose_level    0\ndiabetes               0\ndtype: int64\n\n\n\n\n4.1.4 Describe the Data\n\ndf.describe()\n\n\n\n\n\n\n\n\nage\nhypertension\nheart_disease\nbmi\nHbA1c_level\nblood_glucose_level\ndiabetes\n\n\n\n\ncount\n96146.00\n96146.00\n96146.00\n96146.00\n96146.00\n96146.00\n96146.00\n\n\nmean\n41.79\n0.08\n0.04\n27.32\n5.53\n138.22\n0.09\n\n\nstd\n22.46\n0.27\n0.20\n6.77\n1.07\n40.91\n0.28\n\n\nmin\n0.08\n0.00\n0.00\n10.01\n3.50\n80.00\n0.00\n\n\n25%\n24.00\n0.00\n0.00\n23.40\n4.80\n100.00\n0.00\n\n\n50%\n43.00\n0.00\n0.00\n27.32\n5.80\n140.00\n0.00\n\n\n75%\n59.00\n0.00\n0.00\n29.86\n6.20\n159.00\n0.00\n\n\nmax\n80.00\n1.00\n1.00\n95.69\n9.00\n300.00\n1.00\n\n\n\n\n\n\n\n\n\n4.1.5 Remove unreasonable sample\n\n# histogram for age\nplt.hist(df['age'],bins=80,edgecolor='black')\nplt.title('Age Distribution')\nplt.xlabel('Age')\nplt.ylabel('Count')\nplt.show()\n\n\n\n\n\n\n\n\n\ndf = df[df['age']&gt;=1]\ndf.shape\n\n(95236, 9)\n\n\nWe removed samples with age less than 1 year, as infants are highly unlikely to be included in standard diabetes screening populations. Such values are often the result of data entry errors or reflect special cases outside the scope of typical adult diabetes prediction models. This preprocessing step helps to improve data quality and model reliability.\n\n# bar plot for gender\nsns.countplot(data=df,x='gender')\nplt.title('Gender Distribution')\nplt.show()\n\n\n\n\n\n\n\n\n\ndf = df[df['gender'] != 'Other']\ndf.shape\n\n(95218, 9)\n\n\nIn this study, we focus on biological sex (male and female), as the relationship between biological sex and diabetes risk is well established in the medical literature. Biological sex is associated with distinct hormonal, metabolic, and physiological differences that can significantly impact the development, progression, and management of diabetes. By concentrating on male and female groups, we ensure that our analysis aligns with current scientific understanding and clinical relevance regarding diabetes risk stratification.\nSamples labeled as “Other” in the gender variable were excluded because this category typically represents a very small and heterogeneous subset, which may introduce statistical noise and is not the focus of established diabetes risk research. This approach enhances the scientific validity and interpretability of our study results.\n\n# histogram for BMI\nsns.histplot(df['bmi'],bins=50)\nplt.title(\"BMI Distribution\")\nplt.show()\n\n\n\n\n\n\n\n\n\ndf = df[df[\"bmi\"]&lt;60]\ndf.shape\n\n(95102, 9)\n\n\nBased on the BMI distribution shown above, we removed samples with BMI values greater than or equal to 60. Extremely high BMI values are rare in the general population and are often indicative of data entry errors or outliers that could adversely affect the analysis. Excluding these extreme values helps to improve data quality and ensures that the model is trained on realistic and clinically relevant data.\n\n# count plot for binary variables\nbinary_variables = [\"hypertension\",\"heart_disease\",\"diabetes\"]\nfor i in binary_variables:\n    sns.countplot(data=df,x=i)\n    plt.title(f'{i} Distribution')\n    plt.show()\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nThe bar plots for hypertension, heart disease, and diabetes all show highly imbalanced distributions in the dataset:\n\nHypertension: The vast majority of participants do not have hypertension, while only a small proportion are hypertensive.\nHeart Disease: Similarly, most individuals do not have heart disease, with relatively few positive cases.\nDiabetes: The dataset contains significantly more non-diabetic individuals than diabetic ones.\n\nThese imbalances highlight the challenges for predictive modeling, as the minority classes (positive cases) are underrepresented. Special techniques such as resampling or class weighting are necessary to address the imbalance and ensure that the model can accurately identify individuals at risk for these conditions.\n\n# plot for smoking history\nsns.countplot(data=df,x='smoking_history')\nplt.title('Smoking History Distribution')\nplt.show()\n\n\n\n\n\n\n\n\n\ndf.loc[df['smoking_history'].isin([\"former\",\"ever\",\"not current\"]),\"smoking_history\"]=\"former\"\nsns.countplot(data=df,x='smoking_history')\nplt.title('Smoking History Distribution')\nplt.show()\n\n\n\n\n\n\n\n\nThe first plot of smoking history shows the original distribution of the “smoking_history” variable, which includes several categories such as “never”, “No Info”, “current”, “former”, “ever”, and “not current”. Some of these categories have relatively few samples or represent ambiguous information (e.g., “ever” and “not current”).\nTo simplify the analysis and improve data consistency, we regrouped the less frequent or overlapping categories—specifically, “former”, “ever”, and “not current”—into a single “former” category. The second plot displays the revised distribution after this consolidation, resulting in four main groups: “never”, “No Info”, “current”, and “former”. This adjustment helps to increase the robustness of downstream modeling and makes the variable more interpretable."
+  },
+  {
+    "objectID": "analysis.html#boxplot-bmi-vs-diabetes-classification",
+    "href": "analysis.html#boxplot-bmi-vs-diabetes-classification",
+    "title": "1. Getting Started",
+    "section": "5.1 Boxplot BMI vs Diabetes classification",
+    "text": "5.1 Boxplot BMI vs Diabetes classification\n\nsns.boxplot(data=df, x='diabetes', y='bmi',flierprops=dict(marker='o',markersize=3, linestyle='none', markerfacecolor='gray',alpha=0.5))\nplt.title('BMI Distribution by Diabetes Status')\nplt.show()\n\n\n\n\n\n\n\n\nThe boxplot illustrates the distribution of BMI for individuals with and without diabetes. It is evident that the median BMI of diabetic patients (diabetes = 1) is higher than that of non-diabetic individuals (diabetes = 0). Moreover, the overall BMI distribution for diabetic patients tends to be shifted toward higher values, with both the median and upper quartile being greater. This suggests a strong association between higher BMI and increased risk of diabetes, which is consistent with established clinical findings."
+  },
+  {
+    "objectID": "analysis.html#boxplot-age-vs-diabetes-classification",
+    "href": "analysis.html#boxplot-age-vs-diabetes-classification",
+    "title": "1. Getting Started",
+    "section": "5.2 Boxplot Age vs Diabetes classification",
+    "text": "5.2 Boxplot Age vs Diabetes classification\n\nsns.boxplot(data=df,x=\"diabetes\",y=\"age\")\nplt.title('Age vs Diabetes')\nplt.show()\n\n\n\n\n\n\n\n\nThe boxplot illustrates the age distribution for individuals with and without diabetes. It is clear that diabetic patients (diabetes = 1) tend to be older, with both the median and interquartile range of age being higher than those of non-diabetic individuals (diabetes = 0). This finding supports the well-established clinical observation that the risk of developing diabetes increases with age."
+  },
+  {
+    "objectID": "analysis.html#count-plot-of-gender-vs-diabetes",
+    "href": "analysis.html#count-plot-of-gender-vs-diabetes",
+    "title": "1. Getting Started",
+    "section": "5.3 Count plot of gender vs diabetes",
+    "text": "5.3 Count plot of gender vs diabetes\n\ngrouped = df.groupby([\"gender\",\"diabetes\"]).size().unstack(fill_value=0)\ngrouped\n\n\n\n\n\n\n\ndiabetes\n0\n1\n\n\ngender\n\n\n\n\n\n\nFemale\n51228\n4419\n\n\nMale\n35429\n4026\n\n\n\n\n\n\n\n\ngenders = grouped.index.tolist()\nno_diabetes = grouped[0].tolist()\nyes_diabetes = grouped[1].tolist()\nprint(genders)\nprint(no_diabetes)\nprint(yes_diabetes)\n\n['Female', 'Male']\n[51228, 35429]\n[4419, 4026]\n\n\n\nx = np.arange(len(genders))\nwidth = 0.6\nplt.bar(x,no_diabetes,width,label=\"No Diabetes\")\nplt.bar(x,yes_diabetes,width,bottom=no_diabetes,label=\"Diabetes\")\nplt.xticks(x,genders)\nplt.xlabel(\"gender\")\nplt.ylabel(\"count\")\nplt.title('Diabetes Count by Gender')\nplt.legend(title='Diabetes')\nplt.show()\n\n\n\n\n\n\n\n\nThe count plot shows the distribution of diabetes status by gender. In both female and male groups, the number of non-diabetic individuals (blue) greatly exceeds the number of diabetic individuals (orange), reflecting the class imbalance present in the dataset.\nIt is also observed that there are more females than males in the dataset. And the proportion of diabetes in female is smaller than that of male."
+  },
+  {
+    "objectID": "analysis.html#boxplot-hba1c-level-vs-diabetes-classification",
+    "href": "analysis.html#boxplot-hba1c-level-vs-diabetes-classification",
+    "title": "1. Getting Started",
+    "section": "5.4 Boxplot HbA1c level vs Diabetes classification",
+    "text": "5.4 Boxplot HbA1c level vs Diabetes classification\n\nsns.boxplot(data=df,x=\"diabetes\",y='HbA1c_level')\nplt.title('HbA1c level vs Diabetes')\nplt.show()\n\n\n\n\n\n\n\n\nThe boxplot shows that diabetic patients tend to have significantly higher HbA1c levels compared to non-diabetic individuals. Both the median and the interquartile range for the diabetic group are greater. This is consistent with clinical knowledge, as HbA1c is a key indicator for diabetes diagnosis and management."
+  },
+  {
+    "objectID": "analysis.html#boxplot-blood-glucose-level-vs-diabetes-classification",
+    "href": "analysis.html#boxplot-blood-glucose-level-vs-diabetes-classification",
+    "title": "1. Getting Started",
+    "section": "5.5 Boxplot blood glucose level vs Diabetes classification",
+    "text": "5.5 Boxplot blood glucose level vs Diabetes classification\n\nsns.boxplot(data=df,x=\"diabetes\",y=\"blood_glucose_level\")\nplt.title('Blood Glucose Level vs Diabetes')\nplt.show()\n\n\n\n\n\n\n\n\nThe boxplot indicates that individuals with diabetes have higher blood glucose levels, both in terms of median and overall distribution. This reinforces the association between elevated blood glucose and the presence of diabetes, which is in line with medical criteria for diabetes diagnosis."
+  },
+  {
+    "objectID": "analysis.html#pair-plot-for-numeric-features",
+    "href": "analysis.html#pair-plot-for-numeric-features",
+    "title": "1. Getting Started",
+    "section": "5.6 Pair plot for numeric features",
+    "text": "5.6 Pair plot for numeric features\n\nsns.pairplot(df,hue=\"diabetes\")\nplt.show()\n\n\n\n\n\n\n\n\nThe pairplot highlights that age, BMI, HbA1c level, blood glucose level, hypertension, and heart disease are all features that have clear differences between diabetic and non-diabetic groups. These variables are worth focusing on in our analysis and modeling."
+  },
+  {
+    "objectID": "analysis.html#scatterplot-age-vs-bmi-by-diabetes-classification",
+    "href": "analysis.html#scatterplot-age-vs-bmi-by-diabetes-classification",
+    "title": "1. Getting Started",
+    "section": "6.1 Scatterplot Age vs BMI by Diabetes Classification",
+    "text": "6.1 Scatterplot Age vs BMI by Diabetes Classification\n\nsns.scatterplot(data=df,x=\"age\",y=\"bmi\",hue=\"diabetes\")\nplt.title(\"Age vs BMI\")\nplt.show()\n\n\n\n\n\n\n\n\nThe scatterplot of age versus BMI, colored by diabetes status, reveals several important trends. Diabetic patients (orange dots) tend to cluster in the upper right region of the plot, corresponding to both higher age and higher BMI values. In contrast, non-diabetic individuals (blue dots) are more widely distributed across lower age and BMI ranges, with the majority concentrated at younger ages and lower BMIs. This visual pattern indicates that the risk of diabetes increases with both age and BMI, and that the combination of these two factors is more predictive of diabetes than either variable alone. Overall, the plot underscores a strong joint association of age and BMI with diabetes risk."
+  },
+  {
+    "objectID": "analysis.html#violin-plot-of-bmi-against-diabetes-split-by-gender",
+    "href": "analysis.html#violin-plot-of-bmi-against-diabetes-split-by-gender",
+    "title": "1. Getting Started",
+    "section": "6.2 Violin plot of BMI against Diabetes Split by Gender",
+    "text": "6.2 Violin plot of BMI against Diabetes Split by Gender\n\nsns.violinplot(data=df,x=\"diabetes\",y=\"bmi\",hue=\"gender\",split=True)\nplt.title('BMI vs Diabetes split by Gender')\nplt.show()\n\n\n\n\n\n\n\n\nThe violin plot visualizes the distribution of BMI among diabetic and non-diabetic individuals, further split by gender. For both males and females, the BMI distribution shifts higher in the diabetic group compared to the non-diabetic group, with the median and the bulk of the distribution noticeably greater. Additionally, while both genders show this upward shift, the distribution for females tends to be slightly wider, suggesting more variability in BMI among females with diabetes. Overall, this plot highlights that a higher BMI is associated with diabetes in both genders, but also reveals subtle differences in the distribution shape between males and females."
+  },
+  {
+    "objectID": "analysis.html#interaction-between-gender-age-and-diabetes",
+    "href": "analysis.html#interaction-between-gender-age-and-diabetes",
+    "title": "1. Getting Started",
+    "section": "6.3 Interaction between gender, age, and diabetes",
+    "text": "6.3 Interaction between gender, age, and diabetes\n\nsns.boxplot(data=df,x=\"diabetes\",y=\"age\",hue=\"gender\")\nplt.title(\"'BMI Distribution by Diabetes Status and Gender'\")\nplt.show()\n\n\n\n\n\n\n\n\nThis boxplot illustrates the interaction between gender, age, and diabetes status. Among non-diabetic individuals (diabetes=0), both males and females have a wide age distribution, but the median age appears lower than that of diabetic individuals. For those with diabetes (diabetes=1), both males and females have noticeably higher median ages, indicating that diabetes is more prevalent among older adults regardless of gender. Additionally, the age distributions of males and females are similar within each diabetes group, suggesting that age is a strong predictor for diabetes in both genders."
+  },
+  {
+    "objectID": "analysis.html#ecoding",
+    "href": "analysis.html#ecoding",
+    "title": "1. Getting Started",
+    "section": "7.1 Ecoding",
+    "text": "7.1 Ecoding\nWe perform one-hot encoding on the categorical variables “gender” and “smoking_history,” converting them into separate binary columns so they can be used in correlation analysis and machine learning models.\n\n# one hot coding for gender and smoking history\ndef perform_one_hot_coding(df,collumn_name):\n    df = pd.get_dummies(df,columns=[collumn_name])\n    return df\n    \n\n\n\n\ndata = perform_one_hot_coding(df,'gender')\ndata = perform_one_hot_coding(data,\"smoking_history\")\n\n\ndata.head()\n\n\n\n\n\n\n\n\nage\nhypertension\nheart_disease\nbmi\nHbA1c_level\nblood_glucose_level\ndiabetes\ngender_Female\ngender_Male\nsmoking_history_No Info\nsmoking_history_current\nsmoking_history_former\nsmoking_history_never\n\n\n\n\n0\n80.00\n0\n1\n25.19\n6.60\n140\n0\nTrue\nFalse\nFalse\nFalse\nFalse\nTrue\n\n\n1\n54.00\n0\n0\n27.32\n6.60\n80\n0\nTrue\nFalse\nTrue\nFalse\nFalse\nFalse\n\n\n2\n28.00\n0\n0\n27.32\n5.70\n158\n0\nFalse\nTrue\nFalse\nFalse\nFalse\nTrue\n\n\n3\n36.00\n0\n0\n23.45\n5.00\n155\n0\nTrue\nFalse\nFalse\nTrue\nFalse\nFalse\n\n\n4\n76.00\n1\n1\n20.14\n4.80\n155\n0\nFalse\nTrue\nFalse\nTrue\nFalse\nFalse"
+  },
+  {
+    "objectID": "analysis.html#correlation-1",
+    "href": "analysis.html#correlation-1",
+    "title": "1. Getting Started",
+    "section": "7.2 Correlation",
+    "text": "7.2 Correlation\n\ncorr_matrix = data.corr()\nplt.figure(figsize=(10,8))\nsns.heatmap(corr_matrix,annot=True,fmt=\".2f\",cmap=\"coolwarm\")\nplt.title(\"Correlation Matrix Heatmap\")\nplt.show()\n\n\n\n\n\n\n\n\n\ntarget_corr = corr_matrix[\"diabetes\"].drop(\"diabetes\")\ntarget_corr_sorted = target_corr.sort_values(ascending=False)\n\nsns.set(font_scale=0.8)\nsns.set_style(\"white\")\nsns.set_palette(\"PuBuGn_d\")\nsns.heatmap(target_corr_sorted.to_frame(), cmap=\"coolwarm\", annot=True, fmt='.2f')\nplt.title('Correlation with Diabetes')\nplt.show()\n\n\n\n\n\n\n\n\nThis heatmap displays the Pearson correlation coefficients among all features, with values ranging from -1 to 1. Notably, blood_glucose_level (0.43) and HbA1c_level (0.41) show the strongest positive correlations with the diabetes label, indicating that higher values of these variables are strongly associated with diabetes diagnosis. Age (0.26), bmi (0.21), hypertension (0.19), and heart_disease (0.17) also show moderate positive correlations with diabetes. Some variables, such as smoking_history_No Info (-0.11) and gender_Female (-0.04), are negatively correlated with diabetes, suggesting these groups are slightly less likely to be diagnosed with the disease.\n\ndf.head()\n\n\n\n\n\n\n\n\ngender\nage\nhypertension\nheart_disease\nsmoking_history\nbmi\nHbA1c_level\nblood_glucose_level\ndiabetes\n\n\n\n\n0\nFemale\n80.00\n0\n1\nnever\n25.19\n6.60\n140\n0\n\n\n1\nFemale\n54.00\n0\n0\nNo Info\n27.32\n6.60\n80\n0\n\n\n2\nMale\n28.00\n0\n0\nnever\n27.32\n5.70\n158\n0\n\n\n3\nFemale\n36.00\n0\n0\ncurrent\n23.45\n5.00\n155\n0\n\n\n4\nMale\n76.00\n1\n1\ncurrent\n20.14\n4.80\n155\n0"
+  },
+  {
+    "objectID": "analysis.html#class-imbalance",
+    "href": "analysis.html#class-imbalance",
+    "title": "1. Getting Started",
+    "section": "8.1 Class Imbalance",
+    "text": "8.1 Class Imbalance\n\nprint(df['diabetes'].value_counts())\nsns.countplot(data=df,x=\"diabetes\")\nplt.title(\"Diabetes Distribution\")\nplt.show()\n\ndiabetes\n0    86657\n1     8445\nName: count, dtype: int64\n\n\n\n\n\n\n\n\n\n\n#define resampling\nover = SMOTE(sampling_strategy=0.1,random_state=12)\nunder = RandomUnderSampler(sampling_strategy=0.8)\n\nThe plot and table above show a clear class imbalance in the dataset: there are 86,657 non-diabetic samples and only 8,445 diabetic samples, with diabetics accounting for less than 10% of the data. Such a significant imbalance can cause predictive models to be biased toward the majority class and perform poorly on the minority (diabetic) class. To address this, we will apply resampling methods. Specifically, SMOTE to increase the number of diabetic samples, and RandomUnderSampler to reduce the number of non-diabetic samples. This approach helps to balance the dataset, making the classifier more sensitive to both classes and improving its overall performance."
+  },
+  {
+    "objectID": "analysis.html#scaler",
+    "href": "analysis.html#scaler",
+    "title": "1. Getting Started",
+    "section": "8.2 Scaler",
+    "text": "8.2 Scaler\n\n# split the dataset\nx=df.drop(\"diabetes\",axis=1)\ny=df[\"diabetes\"]\nprint(x.shape)\nprint(y.shape)\nx_temp,x_test,y_temp,y_test = train_test_split(x,y,test_size=0.2,random_state=12)\nprint(x_temp.shape,y_temp.shape)\nx_train,x_valid,y_train,y_valid = train_test_split(x_temp,y_temp,test_size=0.2,random_state=12)\nprint(x_train.shape,x_valid.shape,x_test.shape)\nprint(y_train.value_counts())\n\n(95102, 8)\n(95102,)\n(76081, 8) (76081,)\n(60864, 8) (15217, 8) (19021, 8)\ndiabetes\n0    55428\n1     5436\nName: count, dtype: int64\n\n\n\nnum_features = ['age', 'bmi', 'HbA1c_level', 'blood_glucose_level', 'hypertension', 'heart_disease']\ncat_features = ['gender', 'smoking_history']\npreprocessor = ColumnTransformer(transformers=[\n    ('num', StandardScaler(), num_features),\n    ('cat', OneHotEncoder(handle_unknown='ignore'), cat_features)\n])\n\n# pipline\nclf = imbPipeline(steps=[\n    ('preprocessor', preprocessor),\n    ('over', over),\n    ('under', under),\n    ('classifier', RandomForestClassifier(random_state=12))\n])"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "diabetes_prediction_website",
+    "section": "",
+    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site"
+  }
+]
