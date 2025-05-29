@@ -1,5 +1,5 @@
 project:
-  type: website
+  output-dir: docs
 
 website:
   title: "diabetes_prediction_website"
